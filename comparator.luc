@@ -1,0 +1,24 @@
+module comparator (
+    input alufn[6], //alu input
+    input z,  // z from adder
+    input v,  //v from adder
+    input n,  //n from adder
+    output compout[8] //ALU output
+  ) {
+ sig compin;
+  always {
+    case(alufn[2:1]){
+      b01:
+        compin=z;//compare equals
+      b10:
+        compin=n^v;//compare less than
+      b11:
+        compin=z|(n^v);//compare less equals
+      default:
+        compin=b0;
+        
+  }
+    compout[0]=compin;//lsb of comparator
+    compout[7:1]=7b0;//rest are just zeroes
+}
+}
