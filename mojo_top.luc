@@ -39,7 +39,7 @@ module mojo_top (
   sig a[8]; //8-bit input a
   sig b[8]; //8-bit input b
   sig alu[8]; //8-bit out of alu
-  const DELAY = 25; //control transition between states
+  const DELAY = 19; //control transition between states
   
   //INITIALIZE MODULES/////////////////////
   
@@ -73,14 +73,36 @@ module mojo_top (
     myalu.clk=clk;
     myalu.rst=rst;
     
-    io_led[0]=alu;          //displays alu output on right mst led
+    io_led[2]=alu;          //displays alu output on right mst led
     io_led[1]=io_dip[1];    //displays b
-    io_led[2]=io_dip[0];    //displays a 
+    io_led[0]=io_dip[0];    //displays a 
 
     
     
     //TESTING TESTING////////////////////////////////////////////////////
-    
-    
+    case (mystate.q) {
+      mystate.START:                             //normal alu
+      counter.d = 0;                             //clock counter is 0 when in idle state
+        if (io_button[1] == 1){                  //press center button to start transitions
+          mystate.d = mystate.ADDER1;            //move to first test
+        }
+        
+      mystate.ADDER1: // ADDER Test case 1: 4+4 = 8
+      myalu.alufn = 6b0; //selects addition operation of alu based on alufn
+      myalu.a = 8b100; //a = 4
+      myalu.b = 8b100; //a = 4
+      alu = myalu.alu; //display alu out
+      io_led[1] = 8b101; //display b
+      io_led[0] = 8b101; //display a
+      counter.d = counter.q+1; //increase clock
+        if (counter.q[DELAY]==1&&alu==8b1010){ //correct answer
+          counter.d = 0; //reset counter
+          mystate.d = mystate.ADDER2; //next case
+          
+        }
+          else if (counter.q[DELAY] == 1 && alu!= 8b1010){ //wrong answer
+            counter.d=0;
+            mystate.d=mystate.ADDERERROR;} //move to error state
+      }
     }
-}
+  }
