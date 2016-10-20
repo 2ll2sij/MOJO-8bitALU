@@ -8,7 +8,6 @@ module alu (
     output z, //adder out to cmpre
     output v, //adder out to cmpre
     output n, //adder out to cmpre
-    output overflow //adder overflow
   ) {
   //INSTANTIATE MODULES
   
@@ -44,7 +43,6 @@ module alu (
     
     //adder overflow
     
-    overflow=myadder.overflow;
     v=myadder.v;
     z=myadder.z;
     n=myadder.n;
