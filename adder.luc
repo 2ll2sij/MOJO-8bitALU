@@ -1,16 +1,16 @@
 module adder (
+    //inputs
     input a[8],  
     input b[8],
     input alufn[6],
-    output overflow,  
+    //outputs
     output z,
     output v,
     output n,
     output s[8] //output sum
     ) {
     sig out[8]; // temp storage space for sum such that error will not be thrown 
-    sig zvnhold[8]; 
-  
+    
   always {
     out = 8b0;  //8 bit, 'out' is to hold the sum s
 
@@ -26,11 +26,9 @@ module adder (
       b11: out = a-(a/b*b);
       default:out=a+b;
     }
-    zvnhold=a-b;
     s = out;
-    n = zvnhold[7]; //considered the cases when n is high and low 
-    v = (a[7] & ~b[7] & (~zvnhold[7]) | ((~a[7]) & (b[7] & zvnhold[7])); 
-    overflow = (a[7] & b[7] & (~out[7])) | ((~a[7]) & (~b[7]) & out[7]); // overflow output
+    n = out[7]; //considered the cases when n is high and low 
+    v = (a[7] & b[7] & (~out[7])) | ((~a[7]) & (~b[7]) & out[7]); // overflow output
   }
   
 }
