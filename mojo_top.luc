@@ -1,0 +1,86 @@
+module mojo_top (
+    input clk,              // 50MHz clock
+    input rst_n,            // reset button (active low)
+    output led [8],         // 8 user controllable LEDs
+    input cclk,             // configuration clock, AVR ready when high
+    output spi_miso,        // AVR SPI MISO
+    input spi_ss,           // AVR SPI Slave Select
+    input spi_mosi,         // AVR SPI MOSI
+    input spi_sck,          // AVR SPI Clock
+    output spi_channel [4], // AVR general purpose pins (used by default to select ADC channel)
+    input avr_tx,           // AVR TX (FPGA RX)
+    output avr_rx,          // AVR RX (FPGA TX)
+    input avr_rx_busy,      // AVR RX buffer full
+    input io_dip [3][8],    // input dip switches on io shield
+    input io_button [5],    // input 5 button on io shield 
+    
+    output io_led[3][8],    // leds on io shield
+    output io_sel[4]        //digit selector
+  ) {
+  
+  sig rst;                  // reset signal
+  
+  .clk(clk) {
+    // The reset conditioner is used to synchronize the reset signal to the FPGA
+    // clock. This ensures the entire FPGA comes out of reset at the same time.
+    reset_conditioner reset_cond;
+    
+    .rst(rst) {
+      dff counter[20]; //counter to cycle through states
+      
+      fsm mystate = {START,ADDER1,ADDER2,ADDER3,ADDER4,ADDERERROR,BOOL1,BOOL2,BOOL3,VOOL4,BOOLERROR,SHIFT1,SHIFT2,SHIFT3,SHIFTERROR,
+      COMPARE1,COMPARE2,COMPARE3,COMPAREERROR,STOP};
+    }
+  }
+  
+  //INITIALISE SIGNALS/////////////////////
+  
+  sig alufn[6]; //8-bit alufn input to make decisions
+  sig a[8]; //8-bit input a
+  sig b[8]; //8-bit input b
+  sig alu[8]; //8-bit out of alu
+  const DELAY = 25; //control transition between states
+  
+  //INITIALIZE MODULES/////////////////////
+  
+  alu myalu;       //calls alu 
+  always {
+  
+    //pre conditions
+    reset_cond.in = ~rst_n; // input raw inverted reset signal
+    rst = reset_cond.out;   // conditioned reset
+    
+    led[6:1] = 8h00;        // turn LEDs off
+    spi_miso = bz;          // not using SPI
+    spi_channel = bzzzz;    // not using flags
+    avr_rx = bz;            // not using serial port
+    io_sel=4hf;             //turn digits off
+    
+    
+    // io for key vars
+    
+    
+    led[0]=myalu.v;         //sets overflow to ouput as led0  
+    a=io_dip[0];            //dip switch 0 controls a input
+    b=io_dip[1];            //dip switch 1 controls b input 
+    alufn= io_dip[2][5:0];  //first 6 bits of dip switch 2 sets alufn 
+    
+    //io ALU initilaises all alu inputs
+    myalu.a=a;
+    myalu.b=b;
+    myalu.alufn=alufn;
+    alu= myalu.alu;          
+    myalu.clk=clk;
+    myalu.rst=rst;
+    
+    io_led[0]=alu;          //displays alu output on right mst led
+    io_led[1]=io_dip[1];    //displays b
+    io_led[2]=io_dip[0];    //displays a 
+
+    
+    
+    //TESTING TESTING////////////////////////////////////////////////////
+    
+    
+    }
+}

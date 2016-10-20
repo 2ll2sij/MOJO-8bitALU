@@ -1,0 +1,73 @@
+module alu (
+//MY INPUTS
+    input clk,
+    input rst,
+    input alufn[6], //6 bit alufn number to pass instructions
+    input a[8], // 8 bit input a
+    input b[8], // 8 bit input b
+    output alu[8], //alu output
+    output z, //adder out to cmpre
+    output v, //adder out to cmpre
+    output n //adder out to cmpre
+  ) {
+  //INSTANTIATE MODULES
+  
+  adder myadder;
+  comparator mycompare;
+  shifter myshifter;
+  boolean myboolean;
+  
+  .clk(clk), .rst(rst) {
+  }
+  always{
+    //assign to adder
+    myadder.a=a;
+    myadder.b=b;
+    myadder.alufn=alufn;
+    
+    //assign to shifter
+    
+    myshifter.a = a;
+    myshifter.b = b;
+    myshifter.alufn = alufn;
+    
+    //assign to comparator
+    
+    mycompare.alufn=alufn;
+    mycompare.z=myadder.z;
+    mycompare.v=myadder.v;
+    mycompare.n=myadder.n;
+    
+    //assign to boolean
+    
+    myboolean.a=a;
+    myboolean.b=b;
+    myboolean.alufn=alufn;
+    
+    //adder overflow
+    
+    v=myadder.v;
+    z=myadder.z;
+    n=myadder.n;
+    
+    //setting alufn for alu outs
+    
+    case(alufn[5:4]){
+    
+      b00://adder
+      alu=myadder.s;
+        
+      b01://bool
+      alu=myboolean.out;
+        
+      b10://shifter
+      alu=myshifter.shiftout;
+      
+      b11://mycompare
+      alu=mycompare.compout;
+        
+      default:
+      alu=8b0;
+    }
+  }   
+}
